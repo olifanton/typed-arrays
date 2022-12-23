@@ -4,7 +4,7 @@
     "description": "Typed Arrays for PHP 8",
     "keywords": ["typed", "arrays", "php8"],
     "homepage": "https://github.com/olifanton/typed-arrays",
-    "license": "LGPLv3",
+    "license": "LGPL-3.0",
     "authors": [
         {
             "name": "Andrea Faulds",
