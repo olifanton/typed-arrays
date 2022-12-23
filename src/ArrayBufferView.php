@@ -1,8 +1,11 @@
-<?php declare(strict_types=1);
+<?php /** @noinspection PhpMissingFieldTypeInspection */
+/** @noinspection PhpPropertyOnlyWrittenInspection */
+declare(strict_types=1);
 
-namespace ajf\TypedArrays;
+namespace Olifanton\TypedArrays;
 
 // https://www.khronos.org/registry/typedarray/specs/latest/#6
+
 /**
  * @property-read ArrayBuffer buffer
  * @property-read int byteOffset
@@ -10,19 +13,34 @@ namespace ajf\TypedArrays;
  */
 abstract class ArrayBufferView
 {
-    private /* ArrayBuffer */ $buffer;
-    private /* int */ $byteOffset;
-    private /* int */ $byteLength;
+    /**
+     * @var ArrayBuffer
+     */
+    protected $buffer;
 
-    public function __get(string $propertyName) {
+    /**
+     * @var ArrayBuffer
+     */
+    protected $byteOffset;
+
+    /**
+     * @var int
+     */
+    protected $byteLength;
+
+    /**
+     * @throws \Exception
+     */
+    public function __get(string $propertyName)
+    {
         if ($propertyName === "buffer") {
             return $this->buffer;
         } else if ($propertyName === "byteOffset") {
             return $this->byteOffset;
         } else if ($propertyName === "byteLength") {
             return $this->byteLength;
-        } else {
-            throw new \Exception(self::class . " has no such property '$propertyName'");
         }
+
+        throw new \Exception(self::class . " has no such property '$propertyName'");
     }
 }

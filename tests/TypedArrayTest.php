@@ -1,10 +1,20 @@
 <?php declare(strict_types=1);
 
-namespace ajf\TypedArrays;
+use Olifanton\TypedArrays\ArrayBuffer;
+use Olifanton\TypedArrays\Float32Array;
+use Olifanton\TypedArrays\Float64Array;
+use Olifanton\TypedArrays\Int16Array;
+use Olifanton\TypedArrays\Int32Array;
+use Olifanton\TypedArrays\Int8Array;
+use Olifanton\TypedArrays\Uint16Array;
+use Olifanton\TypedArrays\Uint32Array;
+use Olifanton\TypedArrays\Uint8Array;
+use PHPUnit\Framework\TestCase;
 
-class TypedArrayTest extends \PHPUnit_Framework_TestCase
+class TypedArrayTest extends TestCase
 {
-    public function testInstantiation() {
+    public function testInstantiation(): void
+    {
         $emptyArr = new Uint8Array(0);
         $this->assertEquals(0, $emptyArr->length);
 
@@ -37,49 +47,45 @@ class TypedArrayTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(4, $twelveBufFourFourArr->length);
     }
 
-    /**
-     * @expectedException OutOfBoundsException
-     */
-    public function testInitOffsetExceeded() {
+    public function testInitOffsetExceeded(): void
+    {
         $oneBuf = new ArrayBuffer(1);
+        $this->expectException(OutOfBoundsException::class);
         $oneBufArr = new Uint8Array($oneBuf, 1);
     }
 
-    /**
-     * @expectedException OutOfBoundsException
-     */
-    public function testInitLengthExceeded() {
+    public function testInitLengthExceeded(): void
+    {
         $oneBuf = new ArrayBuffer(1);
+        $this->expectException(OutOfBoundsException::class);
         $oneBufArr = new Uint8Array($oneBuf, 0, 2);
     }
-    
-    /**
-     * @expectedException OutOfBoundsException
-     */
-    public function testInitOffsetAndLengthExceeded() {
+
+    public function testInitOffsetAndLengthExceeded(): void
+    {
         $oneBuf = new ArrayBuffer(1);
+        $this->expectException(OutOfBoundsException::class);
         $oneBufArr = new Uint8Array($oneBuf, 1, 1);
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testInitOffsetNonAlignment() {
+    public function testInitOffsetNonAlignment(): void
+    {
         // Uint16Array has alement size of 2, so expects offset multiple of 2
         $threeBuf = new ArrayBuffer(3);
+        $this->expectException(InvalidArgumentException::class);
         $threeBufArr = new Uint16Array($threeBuf, 1);
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testInitLengthNonAlignment() {
+    public function testInitLengthNonAlignment(): void
+    {
         // Uint16Array has alement size of 2, so expects length multiple of 2
         $threeBuf = new ArrayBuffer(3);
+        $this->expectException(InvalidArgumentException::class);
         $threeBufArr = new Uint16Array($threeBuf);
     }
 
-    public function testRead0xff() {
+    public function testRead0xff(): void
+    {
         $buf = new ArrayBuffer(4);
         $uint8Arr = new Uint8Array($buf);
         $int8Arr = new Int8Array($buf);
@@ -101,7 +107,8 @@ class TypedArrayTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(-1, $int32Arr[0]);
     }
 
-    public function testSet0xff() {
+    public function testSet0xff(): void
+    {
         $fourBuf = new ArrayBuffer(4);
         $uint32FourBufArr = new Uint32Array($fourBuf);
         $uint8FourBufArr = new Uint8Array($fourBuf);
@@ -158,15 +165,19 @@ class TypedArrayTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0xff, $uint8OneBufArr[0]);
     }
 
-    public function testSetAll256() {
+    public function testSetAll256(): void
+    {
         foreach ([Int8Array::class, Int16Array::class, Int32Array::class, Float32Array::class, Float64Array::class] as $class) {
             $arr = new $class(256);
             $pos = 0;
+
             for ($i = -128; $i < 128; $i++) {
                 $arr[$pos] = $i;
                 $pos++;
             }
+
             $pos = 0;
+
             for ($i = -128; $i < 128; $i++) {
                 $this->assertEquals($arr[$pos], $i);
                 $pos++;
@@ -176,11 +187,14 @@ class TypedArrayTest extends \PHPUnit_Framework_TestCase
         foreach ([Uint8Array::class, Uint16Array::class, Uint32Array::class] as $class) {
             $arr = new $class(256);
             $pos = 0;
+
             for ($i = 0; $i < 256; $i++) {
                 $arr[$pos] = $i;
                 $pos++;
             }
+
             $pos = 0;
+
             for ($i = 0; $i < 256; $i++) {
                 $this->assertEquals($arr[$pos], $i);
                 $pos++;
@@ -188,52 +202,48 @@ class TypedArrayTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    /**
-     * @expectedException OutOfBoundsException
-     */
-    public function testGetOffsetLessThanZero() {
+    public function testGetOffsetLessThanZero(): void
+    {
         $oneBuf = new ArrayBuffer(1);
         $oneBufArr = new Uint8Array($oneBuf);
+        $this->expectException(OutOfBoundsException::class);
         $foo = $oneBufArr[-1];
     }
 
-    /**
-     * @expectedException OutOfBoundsException
-     */
-    public function testGetOffsetGreaterThanLength() {
+    public function testGetOffsetGreaterThanLength(): void
+    {
         $oneBuf = new ArrayBuffer(1);
         $oneBufArr = new Uint8Array($oneBuf);
+        $this->expectException(OutOfBoundsException::class);
         $foo = $oneBufArr[1];
     }
 
-    /**
-     * @expectedException OutOfBoundsException
-     */
-    public function testSetOffsetLessThanZero() {
+    public function testSetOffsetLessThanZero(): void
+    {
         $oneBuf = new ArrayBuffer(1);
         $oneBufArr = new Uint8Array($oneBuf);
+        $this->expectException(OutOfBoundsException::class);
         $oneBufArr[-1] = 12;
     }
 
-    /**
-     * @expectedException OutOfBoundsException
-     */
-    public function testSetOffsetGreaterThanLength() {
+    public function testSetOffsetGreaterThanLength(): void
+    {
         $oneBuf = new ArrayBuffer(1);
         $oneBufArr = new Uint8Array($oneBuf);
+        $this->expectException(OutOfBoundsException::class);
         $oneBufArr[1] = 12;
     }
 
-    /**
-     * @expectedException DomainException
-     */
-    public function testUnset() {
+    public function testUnset(): void
+    {
         $oneBuf = new ArrayBuffer(1);
         $oneBufArr = new Uint8Array($oneBuf);
+        $this->expectException(DomainException::class);
         unset($oneBufArr[1]);
     }
 
-    public function testIsset() {
+    public function testIsset(): void
+    {
         $oneBuf = new ArrayBuffer(1);
         $oneBufArr = new Uint8Array($oneBuf);
         $this->assertFalse(isset($oneBufArr[-1]));
@@ -241,40 +251,37 @@ class TypedArrayTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse(isset($oneBufArr[1]));
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testIssetNonInteger() {
+    public function testIssetNonInteger(): void
+    {
         $oneBuf = new ArrayBuffer(1);
         $oneBufArr = new Uint8Array($oneBuf);
+        $this->expectException(InvalidArgumentException::class);
         $foo = isset($oneBufArr["test"]);
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testGetNonInteger() {
+    public function testGetNonInteger(): void
+    {
         $oneBuf = new ArrayBuffer(1);
         $oneBufArr = new Uint8Array($oneBuf);
+        $this->expectException(InvalidArgumentException::class);
         $foo = $oneBufArr["test"];
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testSetNonInteger() {
+    public function testSetNonInteger(): void
+    {
         $oneBuf = new ArrayBuffer(1);
         $oneBufArr = new Uint8Array($oneBuf);
+        $this->expectException(InvalidArgumentException::class);
         $oneBufArr["test"] = 12;
     }
 
     // TODO: test set/subarray/properties and actual data storage
 
-    /**
-     * @expectedException Exception
-     */
-    public function testMissingProperty() {
+    public function testMissingProperty(): void
+    {
         $buf = new ArrayBuffer(0);
-        $foo = $buf->foobar;
+        $this->expectException(Exception::class);
+        /** @noinspection PhpUndefinedFieldInspection */
+        $buf->foobar;
     }
 }

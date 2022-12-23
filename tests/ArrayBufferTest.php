@@ -1,10 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace ajf\TypedArrays;
+use Olifanton\TypedArrays\ArrayBuffer;
+use Olifanton\TypedArrays\Int8Array;
+use PHPUnit\Framework\TestCase;
 
-class ArrayBufferTest extends \PHPUnit_Framework_TestCase
+class ArrayBufferTest extends TestCase
 {
-    public function testInstantiation() {
+    public function testInstantiation(): void
+    {
         $emptyBuf = new ArrayBuffer(0);
         $this->assertEquals(0, $emptyBuf->byteLength);
 
@@ -12,7 +15,8 @@ class ArrayBufferTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(12, $twelveBuf->byteLength);
     }
 
-    public function testSlicing() {
+    public function testSlicing(): void
+    {
         $twelveBuf = new ArrayBuffer(12);
 
         // slices from 4 to end, so 8 bytes
@@ -31,16 +35,17 @@ class ArrayBufferTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $minusFourTenSlice->byteLength);
     }
 
-    public function testIsView() {
+    public function testIsView(): void
+    {
         $this->assertFalse(ArrayBuffer::isView(new \StdClass));
         $this->assertTrue(ArrayBuffer::isView(new Int8Array(1)));
     }
 
-    /**
-     * @expectedException Exception
-     */
-    public function testMissingProperty() {
+    public function testMissingProperty(): void
+    {
         $buf = new ArrayBuffer(0);
-        $foo = $buf->foobar;
+        $this->expectException(\Exception::class);
+        /** @noinspection PhpUndefinedFieldInspection */
+        $buf->foobar;
     }
 }

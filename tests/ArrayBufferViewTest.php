@@ -1,10 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace ajf\TypedArrays;
+use Olifanton\TypedArrays\ArrayBuffer;
+use Olifanton\TypedArrays\ArrayBufferView;
+use PHPUnit\Framework\TestCase;
 
-class ArrayBufferViewTest extends \PHPUnit_Framework_TestCase
+class ArrayBufferViewTest extends TestCase
 {
-    public function testProperty() {
+    public function testProperty(): void
+    {
         $buffer = new ArrayBuffer(16);
         $uselessView = new class($buffer) extends ArrayBufferView
         {
@@ -20,14 +23,14 @@ class ArrayBufferViewTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $uselessView->byteOffset);
     }
 
-    /**
-     * @expectedException Exception
-     */
-    public function testMissingProperty() {
+    public function testMissingProperty(): void
+    {
         $uselessView = new class extends ArrayBufferView
         {
         };
 
-        $foo = $uselessView->foobar;
+        $this->expectException(\Exception::class);
+        /** @noinspection PhpUndefinedFieldInspection */
+        $uselessView->foobar;
     }
 }
