@@ -1,7 +1,7 @@
 Typed Arrays for PHP
 ====================
 
-[`olifanton/typed-arrays`](https://packagist.org/packages/ajf/typed-arrays) is a Composer package which implements [ECMAScript Typed Arrays](http://www.ecma-international.org/ecma-262/6.0/#sec-typedarray-objects) (previously a Khronos Group standard) for PHP 8.
+[`olifanton/typed-arrays`](https://packagist.org/packages/olifanton/typed-arrays) is a Composer package which implements [ECMAScript Typed Arrays](http://www.ecma-international.org/ecma-262/6.0/#sec-typedarray-objects) (previously a Khronos Group standard) for PHP 8.
 
 What's supported
 ----------------
