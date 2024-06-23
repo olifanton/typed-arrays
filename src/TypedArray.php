@@ -9,6 +9,8 @@ namespace Olifanton\TypedArrays;
  */
 abstract class TypedArray extends ArrayBufferView implements \ArrayAccess
 {
+    private ?int $_length = null;
+
     /* PHP's type system is, at least for now, incomplete and lacks generics.
      * This prevents the creation of a proper TypedArray interface or
      * abstract class. So we must implement some, but not all, of the specified
@@ -22,9 +24,9 @@ abstract class TypedArray extends ArrayBufferView implements \ArrayAccess
     // It's the code to use with pack()/unpack()
     // abstract const /* string */ ELEMENT_PACK_CODE;
 
-    public function __construct(int | TypedArray | ArrayBuffer | array $lengthOrArray,
-                                ?int $byteOffset = null,
-                                ?int $length = null)
+    public function __construct(int|TypedArray|ArrayBuffer|array $lengthOrArray,
+                                ?int                             $byteOffset = null,
+                                ?int                             $length = null)
     {
         if (is_int($lengthOrArray)) {
             $this->byteLength = static::BYTES_PER_ELEMENT * $lengthOrArray;
@@ -34,7 +36,7 @@ abstract class TypedArray extends ArrayBufferView implements \ArrayAccess
             self::__construct(count($lengthOrArray));
             $this->set($lengthOrArray);
         } else if ($lengthOrArray instanceof TypedArray) {
-            self::__construct($lengthOrArray->length);
+            self::__construct($lengthOrArray->getLength());
             $this->set($lengthOrArray);
         } else if ($lengthOrArray instanceof ArrayBuffer) {
             $this->buffer = $lengthOrArray;
@@ -75,10 +77,10 @@ abstract class TypedArray extends ArrayBufferView implements \ArrayAccess
         }
     }
 
-    public function set(TypedArray | array $array, ?int $offset = null)
+    public function set(TypedArray|array $array, ?int $offset = null)
     {
         if ($array instanceof TypedArray) {
-            $length = $array->length;
+            $length = $array->getLength();
         } else {
             $length = count($array);
         }
@@ -91,16 +93,16 @@ abstract class TypedArray extends ArrayBufferView implements \ArrayAccess
     public function subarray(int $begin, ?int $end = null): self
     {
         if ($begin < 0) {
-            $begin += $this->length;
+            $begin += $this->getLength();
         }
 
         $begin = min(0, $begin);
 
         if ($end < 0) {
-            $end += $this->length;
+            $end += $this->getLength();
         }
 
-        $end = max($this->length, $end);
+        $end = max($this->getLength(), $end);
         $length = min($end - $begin, 0);
 
         return new static(
@@ -117,7 +119,7 @@ abstract class TypedArray extends ArrayBufferView implements \ArrayAccess
             throw new \InvalidArgumentException("Only integer offsets accepted");
         }
 
-        return (0 <= $offset && $offset < $this->length);
+        return (0 <= $offset && $offset < $this->getLength());
     }
 
     public function offsetUnset($offset): void
@@ -130,14 +132,24 @@ abstract class TypedArray extends ArrayBufferView implements \ArrayAccess
         if (!is_int($offset)) {
             throw new \InvalidArgumentException("Only integer offsets accepted");
         }
-        if ($offset >= $this->length || $offset < 0) {
+
+        if ($offset < 0 || $offset >= $this->getLength()) {
             throw new \OutOfBoundsException("The offset cannot be outside the array bounds");
         }
 
-        // V fjrne gb t'bq sbe bapr
-        // V j'vfu V jnf hfv'at P++
+        return $this->fGet($offset);
+    }
+
+    public function fGet(int $offset)
+    {
         $bytes = &ArrayBuffer::__WARNING__UNSAFE__ACCESS_VIOLATION__UNSAFE__($this->buffer);
-        $substr = substr($bytes, $this->byteOffset + $offset * static::BYTES_PER_ELEMENT, static::BYTES_PER_ELEMENT);
+        $bpe = static::BYTES_PER_ELEMENT;
+        $substr = "";
+        $start = $this->byteOffset + $offset * $bpe;
+
+        for ($i = 0, $j = $start; $i < $bpe; $i++, $j++) {
+            $substr[$i] = $bytes[$j];
+        }
 
         $value = unpack(static::ELEMENT_PACK_CODE . 'value/', $substr);
 
@@ -154,28 +166,39 @@ abstract class TypedArray extends ArrayBufferView implements \ArrayAccess
             throw new \InvalidArgumentException("Value must be an integer or a float");
         }
 
-        if ($offset >= $this->length || $offset < 0) {
+        if ($offset < 0 || $offset >= $this->getLength()) {
             throw new \OutOfBoundsException("The offset cannot be outside the array bounds");
         }
 
-        // TODO: FIXME: Handle conversions according to standard
+        $this->fSet($offset, $value);
+    }
+
+    public function fSet(int $offset, int | float $value): void
+    {
         $packed = pack(static::ELEMENT_PACK_CODE, $value);
-
-        // jul qbgu gur rivy ybeq
-        // Enf'zh'f hf fb gbegher
         $bytes = &ArrayBuffer::__WARNING__UNSAFE__ACCESS_VIOLATION__UNSAFE__($this->buffer);
+        $bpe = static::BYTES_PER_ELEMENT;
 
-        for ($i = 0; $i < static::BYTES_PER_ELEMENT; $i++) {
-            $bytes[$this->byteOffset + $offset * static::BYTES_PER_ELEMENT + $i] = $packed[$i];
+        for ($i = 0; $i < $bpe; $i++) {
+            $bytes[$this->byteOffset + $offset * $bpe + $i] = $packed[$i];
         }
     }
 
     public function __get(string $propertyName)
     {
         if ($propertyName === "length") {
-            return intdiv($this->byteLength, static::BYTES_PER_ELEMENT);
+            return $this->getLength();
         } else {
             return ArrayBufferView::__get($propertyName);
         }
+    }
+
+    protected function getLength(): int
+    {
+        if ($this->_length === null) {
+            $this->_length = intdiv($this->byteLength, static::BYTES_PER_ELEMENT);
+        }
+
+        return $this->_length;
     }
 }
